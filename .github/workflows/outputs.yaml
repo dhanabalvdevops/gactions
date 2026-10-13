@@ -32,7 +32,7 @@ jobs:
 
     # STEP 2 of the chain: promote step outputs to JOB outputs.
     outputs:
-      version:   ${{ steps.meta.outputs.version }}
+      version:   ${{ steps.meta.outputs.item }}
       timestamp: ${{ steps.meta.outputs.timestamp }}
       changelog: ${{ steps.notes.outputs.changelog }}
 
@@ -41,14 +41,14 @@ jobs:
       - name: Compute some metadata
         id: meta                       # <- the id is mandatory
         run: |
-          VERSION="1.4.${{ github.run_number }}"
-          echo "version=$VERSION"            >> "$GITHUB_OUTPUT"
+          ITEM="1.4.${{ github.run_number }}"
+          echo "version=$ITEM"            >> "$GITHUB_OUTPUT"
           echo "timestamp=$(date -u +%FT%TZ)" >> "$GITHUB_OUTPUT"
-          echo "Computed version $VERSION"
+          echo "Computed version $ITEM"
 
       - name: Accessing from another step
         run: |
-          echo "${{ steps.meta.outputs.version }}"
+          echo "${{ steps.meta.outputs.item }}"
 
       # MULTI-LINE values need a random delimiter. A bare newline would be
       # read as the start of the next key and silently truncate your value.
@@ -68,7 +68,7 @@ jobs:
         # as a new key and rejects the file. Use a block scalar (|) like this,
         # or quote the whole string.
         run: |
-          echo "Same job sees: ${{ steps.meta.outputs.version }}"
+          echo "Same job sees: ${{ steps.meta.outputs.item }}"
 
   # STEP 3 of the chain: a different machine, reading the value over `needs`.
   consume:
@@ -77,7 +77,7 @@ jobs:
     steps:
       - name: Read the upstream job's outputs
         run: |
-          echo "Version   : ${{ needs.produce.outputs.version }}"
+          echo "Version   : ${{ needs.produce.outputs.item }}"
           echo "Built at  : ${{ needs.produce.outputs.timestamp }}"
           echo "Changelog :"
           echo "${{ needs.produce.outputs.changelog }}"
